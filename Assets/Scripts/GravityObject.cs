@@ -2,14 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GravityObject : MonoBehaviour {
-
-    const float G = 2.5f;
-
+public class GravityObject : Environment {
     public float mass;
     public float rotation_speed;
+
+    public float sideways_velocity = 0f;
     float radius;
-    Vector3 position;
+    Vector3 position = Vector3.zero;
 
     public static List<GravityObject> GravityObjects;
 
@@ -28,10 +27,12 @@ public class GravityObject : MonoBehaviour {
 
     void Awake() {
         radius = this.transform.lossyScale.x;
+        Time.timeScale = time_multiplier;
     }
 
     void FixedUpdate() {
         position = transform.position;
+        position.z += sideways_velocity;
 
         foreach (GravityObject g_obj in GravityObjects) {
             if(g_obj != this) {
@@ -48,7 +49,7 @@ public class GravityObject : MonoBehaviour {
         float boundaries = (this.radius + gObj.radius) / 2;
         Vector3 force_vector = Vector3.zero;
 
-        force_vector = direction *  ((this.mass + gObj.mass) / distance);
+        force_vector = direction *  ((this.mass + gObj.mass) / (distance));
 
         if (distance > boundaries) {
             gObj.transform.Translate(force_vector * Time.deltaTime);
