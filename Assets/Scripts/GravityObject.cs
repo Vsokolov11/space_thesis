@@ -6,7 +6,7 @@ public class GravityObject : Environment {
     public float mass;
     public float rotation_speed;
 
-    public float sideways_velocity = 0f;
+    public Vector3 sideways_velocity;
     float radius;
     Vector3 position = Vector3.zero;
 
@@ -32,27 +32,29 @@ public class GravityObject : Environment {
 
     void FixedUpdate() {
         position = transform.position;
-        position.z += sideways_velocity;
 
         foreach (GravityObject g_obj in GravityObjects) {
             if(g_obj != this) {
                 ApplyGravity(g_obj);
             }
         }
-
         transform.Rotate(0, rotation_speed * Time.deltaTime, 0, Space.World);
     }
 
     void ApplyGravity(GravityObject gObj) {
-        Vector3 direction = position - gObj.position;
-        float distance = direction.sqrMagnitude;
+        Vector3 direction = Vector3.Normalize(position - gObj.position);
+        float distance =  Vector3.Distance(this.transform.position, gObj.transform.position);
         float boundaries = (this.radius + gObj.radius) / 2;
         Vector3 force_vector = Vector3.zero;
 
-        force_vector = direction *  ((this.mass + gObj.mass) / (distance));
+
+        force_vector = direction * (GR * ((this.mass * gObj.mass) / Mathf.Pow(distance, 2)));
+        force_vector += gObj.sideways_velocity;
+        force_vector /= gObj.mass;
 
         if (distance > boundaries) {
-            gObj.transform.Translate(force_vector * Time.deltaTime);
+            gObj.transform.Translate(force_vector * Time.deltaTime, Space.Self);
         }
+
     }
 }
